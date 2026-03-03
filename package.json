@@ -1,0 +1,5 @@
+{
+  "name": "playlist-downloader",
+  "private": true,
+  "workspaces": ["server", "client"]
+}
