@@ -145,7 +145,7 @@ async function processJob(job) {
     store.update(job.id, { tracks: [...tracks] });
 
     try {
-      const filePath = await downloadTrackWithRetry(job.url, tracks[i], outputDir, tracks, job.id, job.browser);
+      const filePath = await downloadTrackWithRetry(job.url, tracks[i], outputDir, tracks, job.id);
       tracks[i].status = "complete";
       tracks[i].progress = 100;
       tracks[i].filePath = filePath;
@@ -170,16 +170,16 @@ async function processJob(job) {
   }, CLEANUP_DELAY_MS);
 }
 
-async function downloadTrackWithRetry(url, track, outputDir, tracks, jobId, browser) {
+async function downloadTrackWithRetry(url, track, outputDir, tracks, jobId) {
   const makeProgressCallback = () => (progress) => {
     track.progress = progress;
     store.update(jobId, { tracks: [...tracks] });
   };
 
   try {
-    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback(), { browser });
+    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback());
   } catch {
-    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback(), { browser });
+    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback());
   }
 }
 

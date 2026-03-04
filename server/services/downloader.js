@@ -63,7 +63,11 @@ export async function fetchPlaylistInfo(url, { browser } = {}) {
   });
 }
 
-export function downloadTrack(url, videoId, outputDir, onProgress, { browser } = {}) {
+// Cookies are only used for fetchPlaylistInfo (to access private playlists).
+// downloadTrack fetches each video by its public ID, so cookies are not needed
+// and actually cause failures (authenticated requests change available formats
+// and break the JS challenge solver).
+export function downloadTrack(url, videoId, outputDir, onProgress) {
   return new Promise((resolve, reject) => {
     const outputTemplate = path.join(outputDir, "%(title)s.%(ext)s");
 
@@ -73,7 +77,6 @@ export function downloadTrack(url, videoId, outputDir, onProgress, { browser } =
       "--audio-quality", "0",
       "--newline",
       "--no-playlist",
-      ...getCookiesArgs(browser),
       "-o", outputTemplate,
       `https://www.youtube.com/watch?v=${videoId}`,
     ];
