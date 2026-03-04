@@ -3,43 +3,80 @@ const STATUS_LABELS = {
   downloading: "Downloading",
   complete: "Done",
   error: "Error",
+  skipped: "Skipped",
+  cancelled: "Cancelled",
 };
 
 const STATUS_COLORS = {
-  waiting: "text-gray-500",
-  downloading: "text-yellow-400",
-  complete: "text-green-400",
-  error: "text-red-400",
+  waiting: "var(--text-muted)",
+  downloading: "var(--accent)",
+  complete: "#34d399",
+  error: "#f87171",
+  skipped: "#fb923c",
+  cancelled: "var(--text-muted)",
 };
 
-export function TrackItem({ track, index, jobId }) {
-  return (
-    <div className="flex items-center gap-4 py-3 px-4 bg-gray-800 rounded-lg">
-      <span className="text-gray-500 text-sm w-8 text-right">{index + 1}</span>
+export function TrackItem({ track, index, jobId, onSkip, delay }) {
+  const dimmed = track.status === "waiting" || track.status === "cancelled";
 
+  return (
+    <div
+      className="track-row animate-in"
+      style={{ animationDelay: `${delay}s` }}
+    >
+      {/* Track number */}
+      <span
+        className="text-right flex-shrink-0"
+        style={{ color: "var(--text-muted)", fontSize: "13px", width: "28px" }}
+      >
+        {index + 1}
+      </span>
+
+      {/* Status dot */}
+      <div className={`status-dot ${track.status}`} />
+
+      {/* Title + progress */}
       <div className="flex-1 min-w-0">
-        <p className="text-white truncate">{track.title}</p>
+        <p
+          className="truncate text-sm"
+          style={{ color: dimmed ? "var(--text-secondary)" : "var(--text-primary)" }}
+        >
+          {track.title}
+        </p>
         {track.status === "downloading" && (
-          <div className="mt-1 w-full bg-gray-700 rounded-full h-1.5">
+          <div className="progress-track progress-track-sm mt-2">
             <div
-              className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
+              className="progress-fill active"
               style={{ width: `${track.progress}%` }}
             />
           </div>
         )}
         {track.error && (
-          <p className="text-red-400 text-xs mt-1">{track.error}</p>
+          <p className="mt-1" style={{ color: "#f87171", fontSize: "12px" }}>
+            {track.error}
+          </p>
         )}
       </div>
 
-      <span className={`text-sm ${STATUS_COLORS[track.status]}`}>
+      {/* Status label */}
+      <span
+        className="flex-shrink-0"
+        style={{ fontSize: "12px", color: STATUS_COLORS[track.status] }}
+      >
         {STATUS_LABELS[track.status]}
       </span>
+
+      {/* Actions */}
+      {track.status === "downloading" && (
+        <button onClick={() => onSkip(index)} className="link-action skip">
+          Skip
+        </button>
+      )}
 
       {track.status === "complete" && (
         <a
           href={`/api/playlist/${jobId}/download/${index}`}
-          className="text-sm text-red-400 hover:text-red-300 underline"
+          className="link-action accent"
         >
           Download
         </a>

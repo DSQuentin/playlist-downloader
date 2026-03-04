@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const BROWSER_OPTIONS = [
-  { value: "", label: "None (public playlists only)" },
+  { value: "", label: "No cookies (public only)" },
   { value: "chrome", label: "Chrome" },
   { value: "firefox", label: "Firefox" },
   { value: "edge", label: "Edge" },
@@ -27,48 +27,59 @@ export function PlaylistInput({ onSubmit, isLoading }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4">
-      <h1 className="text-4xl font-bold text-white mb-2">Playlist Downloader</h1>
-      <p className="text-gray-400 mb-8">Download YouTube playlists as MP3</p>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="glass w-full max-w-md p-8 animate-in">
+        <h1 className="text-2xl font-bold mb-1">
+          Playlist Downloader
+        </h1>
+        <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>
+          Paste a YouTube playlist URL to download as MP3
+        </p>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-xl flex flex-col gap-4">
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Paste your YouTube playlist link"
-          className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:outline-none text-lg"
-          disabled={isLoading}
-        />
-        <div>
-          <label className="block text-gray-400 text-sm mb-1">
-            Use cookies from browser (for private playlists)
-          </label>
-          <select
-            value={browser}
-            onChange={(e) => setBrowser(e.target.value)}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://youtube.com/playlist?list=..."
+            className="input-glass"
             disabled={isLoading}
-            className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:outline-none"
-          >
-            {BROWSER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="submit"
-          disabled={isLoading || !url.trim()}
-          className="px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-lg"
-        >
-          {isLoading ? "Starting..." : "Download"}
-        </button>
-      </form>
+            required
+          />
 
-      {error && (
-        <p className="mt-4 text-red-400 text-sm">{error}</p>
-      )}
+          <div className="flex gap-3">
+            <select
+              value={browser}
+              onChange={(e) => setBrowser(e.target.value)}
+              disabled={isLoading}
+              className="select-glass flex-1"
+            >
+              {BROWSER_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="submit"
+              disabled={isLoading || !url.trim()}
+              className="btn btn-accent flex-1"
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner" />
+                  Starting...
+                </>
+              ) : (
+                "Download"
+              )}
+            </button>
+          </div>
+        </form>
+
+        {error && <p className="error-box mt-4">{error}</p>}
+      </div>
     </div>
   );
 }

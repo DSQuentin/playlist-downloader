@@ -68,40 +68,40 @@ export async function fetchPlaylistInfo(url, { browser } = {}) {
 // and actually cause failures (authenticated requests change available formats
 // and break the JS challenge solver).
 export function downloadTrack(url, videoId, outputDir, onProgress) {
-  return new Promise((resolve, reject) => {
-    const outputTemplate = path.join(outputDir, "%(title)s.%(ext)s");
+  const outputTemplate = path.join(outputDir, "%(title)s.%(ext)s");
 
-    const args = [
-      "--extract-audio",
-      "--audio-format", "mp3",
-      "--audio-quality", "0",
-      "--embed-thumbnail",
-      "--newline",
-      "--no-playlist",
-      "-o", outputTemplate,
-      `https://www.youtube.com/watch?v=${videoId}`,
-    ];
+  const args = [
+    "--extract-audio",
+    "--audio-format", "mp3",
+    "--audio-quality", "0",
+    "--embed-thumbnail",
+    "--newline",
+    "--no-playlist",
+    "-o", outputTemplate,
+    `https://www.youtube.com/watch?v=${videoId}`,
+  ];
 
-    const proc = spawn("yt-dlp", args);
-    let stderr = "";
-    let filename = null;
+  const proc = spawn("yt-dlp", args);
+  let stderr = "";
+  let filename = null;
 
-    proc.stdout.on("data", (chunk) => {
-      const text = chunk.toString();
+  proc.stdout.on("data", (chunk) => {
+    const text = chunk.toString();
 
-      const progressMatch = text.match(/\[download\]\s+([\d.]+)%/);
-      if (progressMatch) {
-        onProgress(parseFloat(progressMatch[1]));
-      }
+    const progressMatch = text.match(/\[download\]\s+([\d.]+)%/);
+    if (progressMatch) {
+      onProgress(parseFloat(progressMatch[1]));
+    }
 
-      const destMatch = text.match(/\[ExtractAudio\] Destination: (.+\.mp3)/);
-      if (destMatch) {
-        filename = destMatch[1].trim();
-      }
-    });
+    const destMatch = text.match(/\[ExtractAudio\] Destination: (.+\.mp3)/);
+    if (destMatch) {
+      filename = destMatch[1].trim();
+    }
+  });
 
-    proc.stderr.on("data", (chunk) => { stderr += chunk; });
+  proc.stderr.on("data", (chunk) => { stderr += chunk; });
 
+  const promise = new Promise((resolve, reject) => {
     proc.on("close", (code) => {
       if (code !== 0) {
         return reject(new Error(`yt-dlp download failed: ${stderr}`));
@@ -110,6 +110,8 @@ export function downloadTrack(url, videoId, outputDir, onProgress) {
       resolve(filename);
     });
   });
+
+  return { promise, proc };
 }
 
 export async function ensureOutputDir(jobId) {
