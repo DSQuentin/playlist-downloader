@@ -75,6 +75,7 @@ export function downloadTrack(url, videoId, outputDir, onProgress) {
       "--extract-audio",
       "--audio-format", "mp3",
       "--audio-quality", "0",
+      "--embed-thumbnail",
       "--newline",
       "--no-playlist",
       "-o", outputTemplate,
