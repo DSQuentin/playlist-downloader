@@ -19,7 +19,7 @@ const CLEANUP_DELAY_MS = 60 * 60 * 1000;
 
 // POST /api/playlist - Start a new download job
 router.post("/", validateUrl, async (req, res) => {
-  const { url } = req.body;
+  const { url, browser } = req.body;
   const ip = req.ip;
 
   if (store.countByIp(ip) >= MAX_CONCURRENT_JOBS_PER_IP) {
@@ -29,6 +29,7 @@ router.post("/", validateUrl, async (req, res) => {
   }
 
   const job = store.create(url, ip);
+  job.browser = browser || null;
   res.json({ jobId: job.id });
 
   // Start processing in background (don't await)
@@ -123,7 +124,7 @@ async function processJob(job) {
   const outputDir = await ensureOutputDir(job.id);
 
   store.update(job.id, { status: "fetching_info" });
-  const { playlistTitle, tracks: trackInfos } = await fetchPlaylistInfo(job.url);
+  const { playlistTitle, tracks: trackInfos } = await fetchPlaylistInfo(job.url, { browser: job.browser });
 
   const tracks = trackInfos.map((t) => ({
     ...t,
@@ -144,7 +145,7 @@ async function processJob(job) {
     store.update(job.id, { tracks: [...tracks] });
 
     try {
-      const filePath = await downloadTrackWithRetry(job.url, tracks[i], outputDir, tracks, job.id);
+      const filePath = await downloadTrackWithRetry(job.url, tracks[i], outputDir, tracks, job.id, job.browser);
       tracks[i].status = "complete";
       tracks[i].progress = 100;
       tracks[i].filePath = filePath;
@@ -169,16 +170,16 @@ async function processJob(job) {
   }, CLEANUP_DELAY_MS);
 }
 
-async function downloadTrackWithRetry(url, track, outputDir, tracks, jobId) {
+async function downloadTrackWithRetry(url, track, outputDir, tracks, jobId, browser) {
   const makeProgressCallback = () => (progress) => {
     track.progress = progress;
     store.update(jobId, { tracks: [...tracks] });
   };
 
   try {
-    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback());
+    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback(), { browser });
   } catch {
-    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback());
+    return await downloadTrack(url, track.videoId, outputDir, makeProgressCallback(), { browser });
   }
 }
 

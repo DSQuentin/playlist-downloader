@@ -3,7 +3,8 @@ import path from "node:path";
 import fs from "node:fs/promises";
 
 const MAX_TRACKS = 200;
-const COOKIES_BROWSER = process.env.COOKIES_BROWSER || null;
+
+const ALLOWED_BROWSERS = ["chrome", "firefox", "edge", "safari", "opera", "brave"];
 
 // Convert watch?v=...&list=... URLs to playlist?list=... format
 // so yt-dlp always treats them as playlists
@@ -16,12 +17,12 @@ function toPlaylistUrl(url) {
   return url;
 }
 
-function getCookiesArgs() {
-  if (!COOKIES_BROWSER) return [];
-  return ["--cookies-from-browser", COOKIES_BROWSER];
+function getCookiesArgs(browser) {
+  if (!browser || !ALLOWED_BROWSERS.includes(browser)) return [];
+  return ["--cookies-from-browser", browser];
 }
 
-export async function fetchPlaylistInfo(url) {
+export async function fetchPlaylistInfo(url, { browser } = {}) {
   const playlistUrl = toPlaylistUrl(url);
 
   return new Promise((resolve, reject) => {
@@ -30,7 +31,7 @@ export async function fetchPlaylistInfo(url) {
       "--dump-json",
       "--yes-playlist",
       "--playlist-end", String(MAX_TRACKS),
-      ...getCookiesArgs(),
+      ...getCookiesArgs(browser),
       playlistUrl,
     ];
 
@@ -62,7 +63,7 @@ export async function fetchPlaylistInfo(url) {
   });
 }
 
-export function downloadTrack(url, videoId, outputDir, onProgress) {
+export function downloadTrack(url, videoId, outputDir, onProgress, { browser } = {}) {
   return new Promise((resolve, reject) => {
     const outputTemplate = path.join(outputDir, "%(title)s.%(ext)s");
 
@@ -72,7 +73,7 @@ export function downloadTrack(url, videoId, outputDir, onProgress) {
       "--audio-quality", "0",
       "--newline",
       "--no-playlist",
-      ...getCookiesArgs(),
+      ...getCookiesArgs(browser),
       "-o", outputTemplate,
       `https://www.youtube.com/watch?v=${videoId}`,
     ];

@@ -1,7 +1,18 @@
 import { useState } from "react";
 
+const BROWSER_OPTIONS = [
+  { value: "", label: "None (public playlists only)" },
+  { value: "chrome", label: "Chrome" },
+  { value: "firefox", label: "Firefox" },
+  { value: "edge", label: "Edge" },
+  { value: "safari", label: "Safari" },
+  { value: "opera", label: "Opera" },
+  { value: "brave", label: "Brave" },
+];
+
 export function PlaylistInput({ onSubmit, isLoading }) {
   const [url, setUrl] = useState("");
+  const [browser, setBrowser] = useState("");
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -9,7 +20,7 @@ export function PlaylistInput({ onSubmit, isLoading }) {
     setError(null);
 
     try {
-      await onSubmit(url);
+      await onSubmit(url, browser);
     } catch (err) {
       setError(err.message);
     }
@@ -29,6 +40,23 @@ export function PlaylistInput({ onSubmit, isLoading }) {
           className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:outline-none text-lg"
           disabled={isLoading}
         />
+        <div>
+          <label className="block text-gray-400 text-sm mb-1">
+            Use cookies from browser (for private playlists)
+          </label>
+          <select
+            value={browser}
+            onChange={(e) => setBrowser(e.target.value)}
+            disabled={isLoading}
+            className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:outline-none"
+          >
+            {BROWSER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <button
           type="submit"
           disabled={isLoading || !url.trim()}

@@ -8,13 +8,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const eventSourceRef = useRef(null);
 
-  const handleSubmit = async (url) => {
+  const handleSubmit = async (url, browser) => {
     setIsLoading(true);
 
     const res = await fetch("/api/playlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, browser: browser || undefined }),
     });
 
     const data = await res.json();
