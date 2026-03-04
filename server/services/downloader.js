@@ -3,15 +3,35 @@ import path from "node:path";
 import fs from "node:fs/promises";
 
 const MAX_TRACKS = 200;
+const COOKIES_BROWSER = process.env.COOKIES_BROWSER || null;
+
+// Convert watch?v=...&list=... URLs to playlist?list=... format
+// so yt-dlp always treats them as playlists
+function toPlaylistUrl(url) {
+  const parsed = new URL(url);
+  const listId = parsed.searchParams.get("list");
+  if (listId) {
+    return `https://www.youtube.com/playlist?list=${listId}`;
+  }
+  return url;
+}
+
+function getCookiesArgs() {
+  if (!COOKIES_BROWSER) return [];
+  return ["--cookies-from-browser", COOKIES_BROWSER];
+}
 
 export async function fetchPlaylistInfo(url) {
+  const playlistUrl = toPlaylistUrl(url);
+
   return new Promise((resolve, reject) => {
     const args = [
       "--flat-playlist",
       "--dump-json",
       "--yes-playlist",
       "--playlist-end", String(MAX_TRACKS),
-      url,
+      ...getCookiesArgs(),
+      playlistUrl,
     ];
 
     const proc = spawn("yt-dlp", args);
@@ -52,6 +72,7 @@ export function downloadTrack(url, videoId, outputDir, onProgress) {
       "--audio-quality", "0",
       "--newline",
       "--no-playlist",
+      ...getCookiesArgs(),
       "-o", outputTemplate,
       `https://www.youtube.com/watch?v=${videoId}`,
     ];
