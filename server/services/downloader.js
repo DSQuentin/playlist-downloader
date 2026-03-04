@@ -9,6 +9,7 @@ export async function fetchPlaylistInfo(url) {
     const args = [
       "--flat-playlist",
       "--dump-json",
+      "--yes-playlist",
       "--playlist-end", String(MAX_TRACKS),
       url,
     ];
