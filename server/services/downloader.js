@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 
 const MAX_TRACKS = 200;
 
-const ALLOWED_BROWSERS = ["chrome", "firefox", "edge", "safari", "opera", "brave"];
+export const ALLOWED_BROWSERS = ["chrome", "firefox", "edge", "safari", "opera", "brave"];
 
 // Convert watch?v=...&list=... URLs to playlist?list=... format
 // so yt-dlp always treats them as playlists
@@ -114,8 +114,8 @@ export function downloadTrack(url, videoId, outputDir, onProgress) {
   return { promise, proc };
 }
 
-export async function ensureOutputDir(jobId) {
-  const dir = path.join(process.cwd(), "tmp", jobId);
+export async function ensureOutputDir(outputPath) {
+  const dir = path.resolve(outputPath);
   await fs.mkdir(dir, { recursive: true });
   return dir;
 }

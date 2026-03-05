@@ -1,6 +1,6 @@
 # Playlist Downloader
 
-A web app to download YouTube playlists as MP3 files with embedded cover art. Paste a playlist URL, pick your tracks, and download them as a ZIP archive.
+Download YouTube playlists as MP3 files with embedded cover art. Available as a web app or a CLI tool.
 
 Built with React (Vite + Tailwind) and Express, powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org/).
 
@@ -42,7 +42,35 @@ docker compose up --build
 
 The app will be available at http://localhost:3001.
 
-## How it works
+### CLI
+
+You can also download playlists directly from the terminal, without starting the web app. The CLI is interactive — it will ask you for the playlist URL, browser cookies, and output directory.
+
+```bash
+cd server
+npm run cli
+```
+
+```
+  playlist-downloader
+
+  Playlist URL: https://youtube.com/playlist?list=PLxxx
+
+  Browser cookies (for private playlists)
+    0) None (public playlist)
+    1) chrome
+    2) firefox
+    ...
+  Choice [0]: 1
+
+  Output directory [./downloads]:
+```
+
+Tracks are saved as MP3 files (with cover art) inside a subfolder named after the playlist: `./downloads/My Playlist/`.
+
+## How it works (web)
+
+### Web interface
 
 1. Paste a YouTube playlist URL into the input field.
 2. Optionally select a browser to use cookies from (for private playlists).
@@ -55,7 +83,8 @@ The app will be available at http://localhost:3001.
 ```
 playlist-downloader/
 ├── client/          # React frontend (Vite + Tailwind)
-├── server/          # Express API
+├── server/          # Express API + CLI
+│   ├── cli.js       # CLI entry point
 │   ├── routes/      # API endpoints
 │   ├── services/    # Download logic (yt-dlp + ffmpeg)
 │   └── tests/       # Server tests

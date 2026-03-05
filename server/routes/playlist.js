@@ -171,7 +171,7 @@ router.post("/:jobId/skip/:trackIndex", (req, res) => {
 });
 
 async function processJob(job) {
-  const outputDir = await ensureOutputDir(job.id);
+  const outputDir = await ensureOutputDir(path.join("tmp", job.id));
 
   store.update(job.id, { status: "fetching_info" });
   const { playlistTitle, tracks: trackInfos } = await fetchPlaylistInfo(job.url, { browser: job.browser });
